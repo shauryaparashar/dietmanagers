@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="css/main.css">
+  <script src="main.js"></script>
+    <meta charset="UTF-8">
+    <title>Nutrition Profile</title>
+</head>
+<body>
+  <br><br>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-6 offset-4">
+      <span>
+        <input type="text" id="dvInput"  onkeypress='validate(event)' class="wo-decimals" placeholder="Calories"/>
+        <button onClick="daliyValueCalculation()" class="btn btn-primary">Calculate DV</button>
+        <br><br>
+
+        <select id="mealType">
+        <option value="meal1">Early Morning</option>
+        <option value="meal2">Breakfast</option>
+        <option value="meal3">Brunch</option>
+        <option value="meal4">Lunch</option>
+        <option value="meal5">Supper</option>
+        <option value="meal6">Dinner</option>
+        <option value="meal7">Post-Dinner</option>
+        </select>
+        <input type="text" id="ajax" list="json-datalist" placeholder="food items" class="validate"/>
+        <datalist id="json-datalist"></datalist>
+        <div id="results" style='color:red'></div>
+        <br>
+        <input type="text" id="ingrams"  onkeypress='validate(event)' class="wo-decimals" placeholder="In Grams"/>
+        <button onClick="addNutrition()" class="btn btn-primary">Add</button>
+
+
+        </span>
+      </div>
+    </div>
+  </div>
+
+<div class="table-responsive">
+<table class="table table-striped ">
+  <thead>
+    <tr>
+      <th scope="col">Items</th>
+      <th scope="col">Early Morning</th>
+      <th scope="col">Breakfast</th>
+      <th scope="col">Brunch</th>
+      <th scope="col">Lunch</th>
+      <th scope="col">Supper</th>
+      <th scope="col">Dinner</th>
+      <th scope="col">Post-Dinner</th>
+      <th scope="col">Total</th>
+      <th scope="col">Daily Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Energy (kcal/100g)</th>
+      <td class='meal1' ></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+      <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Carbohydtrates (g/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total" ></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Fats (g/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Proteins (g/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Dietary Fibre (g/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Vitamin A (IU/100g))</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Vitamin C (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Calcium (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Sodium (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Potassium (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Phosphorous (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Magnesium (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Iron (mg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row">Folate (mcg/100g)</th>
+      <td class='meal1'></td>
+      <td class="meal2"></td>
+      <td class="meal3"></td>
+      <td class="meal4"></td>
+      <td class="meal5"></td>
+      <td class="meal6"></td>
+      <td class="meal7"></td>
+      <td class="total"></td>
+        <td class="dv"></td>
+    </tr>
+    <tr>
+      <th scope="row"></th>
+      <td  class='wrapTd'><ul class="list-group" id="earlyMorningList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="breakfastList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="brunchList"></ul></td>
+      <td class='wrapTd'><ul cclass="list-group" id="lunchList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="supperList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="dinnerList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="postDinnerList"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="totalcontentIng"></ul></td>
+      <td class='wrapTd'><ul class="list-group"  id="totalDV"></ul></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</body>
+
+
+</html>

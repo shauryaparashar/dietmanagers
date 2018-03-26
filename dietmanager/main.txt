@@ -1,0 +1,411 @@
+//var nutri=
+
+var nutri;
+//
+// $.getJSON("data.json", function(json) {
+//     nutri=json; // this will show the info it in firebug console
+// });
+
+
+      var totalWeight=[];
+      var totalIndividualContentWeight=[];
+
+          // {
+          //     "Vegetables": 0,
+          //     "Fruits": 0
+          // };
+          //
+
+      var totalNutrition={
+        'nutriContentMeal1':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal2':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal3':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal4':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal5':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal6':{
+          'items':[],
+          'weights':[]
+        },
+        'nutriContentMeal7':{
+          'items':[],
+          'weights':[]
+        }
+      }
+
+      //Daily Value of each for 1Cal if taken
+      var dvForOne=
+      {
+        "B": "1", //Energy
+        "C": "0.1", //Carbs
+        "D": "0.035",//Fats
+        "E": "0.075",//Protein
+        "F": "0.025", //fibre
+        "G": "2.50", //Vitamin A
+        "H": "0.03", //Vitamin C
+        "I": "0.50", //Calcium
+        "J": "0.70", //Sodium
+        "K": "1.75", //Potassium
+        "L": "0.50", //Phosphorus
+        "M": "0.20", //Magnisium
+        "N": "0.008", //Iron
+        "O": "0.20", //Folate
+      };
+        $( document ).ready(function() {
+            $.getJSON("data.json", function(json) {
+                nutri=json; // this will show the info it in firebug console
+                init();
+            });
+
+        });
+
+
+        function init() {
+
+            $(".two-decimals").change(function(){
+          this.value = parseFloat(this.value).toFixed(2);
+        });
+        //Unique values of types of ingredeints
+            var lookup = {};
+
+       var dataList = document.getElementById('json-datalist');
+        var input = document.getElementById('ajax');
+      for (var key in nutri) {
+            if (nutri.hasOwnProperty(key) && key !="Name") {
+                var type = nutri[key][0]['P'];
+                if (!(type in lookup)) {
+                    lookup[type] = 1;
+                    totalIndividualContentWeight.push({'IngreType':type,'IngreWt':0});
+                }
+              var option = document.createElement('option');
+               option.value=key;
+               dataList.appendChild(option);
+            }
+         }
+}
+//Enter only number
+function validate(evt) {
+  var theEvent = evt || window.event;
+  var key = theEvent.keyCode || theEvent.which;
+  key = String.fromCharCode( key );
+  var regex = /[0-9]|\./;
+//  var regex=/^\d+(\.\d{1,2})?$/ ;
+  if( !regex.test(key) ) {
+    theEvent.returnValue = false;
+    if(theEvent.preventDefault) theEvent.preventDefault();
+  }
+}
+function accumulate(list, operator) {
+    return list.reduce(operations[operator]);
+}
+var operations = {
+    "+" : function (operand1, operand2) {
+        return operand1 + operand2;
+    },
+    "-" : function (operand1, operand2) {
+        return operand1 - operand2;
+    },
+    "*" : function (operand1, operand2) {
+        return operand1 * operand2;
+    }
+};
+//Daily Value Calculation
+function daliyValueCalculation() {
+  var dvi=0;
+for (var key in dvForOne)
+{
+  var dvCal = $('#dvInput').val();
+ var arrayOfDV=document.querySelectorAll('.dv');
+    arrayOfDV[dvi].innerHTML=(dvCal*dvForOne[key]).toFixed(3);
+ dvi++;
+}
+}
+
+//Total nutrion for the Dietary
+function totalNutritionCalculate(iw) {
+var sumOfOne=0;
+var arrayofTotal=document.querySelectorAll('.total');
+  for(key in totalNutrition)
+  {
+    if(!totalNutrition[key].weights[iw])
+    totalNutrition[key].weights[iw]=0;
+    sumOfOne=sumOfOne+totalNutrition[key].weights[iw];
+  }
+  totalWeight[iw]=sumOfOne;
+  arrayofTotal[iw].innerHTML=totalWeight[iw].toFixed(2);
+}
+//Update each content weight for a day
+var textTotalContent="";
+function contentTypeWholeDayWeightUpdate(op,content){
+
+    for(var i=0;i<totalIndividualContentWeight.length;i++)
+    {
+        if(content.Type== totalIndividualContentWeight[i].IngreType)
+        {
+            totalIndividualContentWeight[i].IngreWt=accumulate([totalIndividualContentWeight[i].IngreWt, parseInt(content.InputWeight)], op);
+
+        }
+        textTotalContent=textTotalContent+"<li style='color:red;font-weight:bold' id='"+totalIndividualContentWeight[i].IngreType+"'>Total "+totalIndividualContentWeight[i].IngreType + "-- "+totalIndividualContentWeight[i].IngreWt + " grams</li>";
+
+    }
+    $('#totalcontentIng').empty();
+    $("#totalcontentIng").append( textTotalContent );
+    textTotalContent="";
+    }
+//Update list when delete an item from meals
+function updateList(newList,index,name,id,nameOfIngre)
+{
+
+  var valueInGrams=document.getElementById(""+name+index+"").getAttribute('data-value');
+  var arrayofMealTypes=document.querySelectorAll('.'+name);
+  var inc=0;
+  for (var key in nutri[nameOfIngre][0])
+  {
+    if(key !="P"){
+    newList.weights[inc]=newList.weights[inc]-(valueInGrams/100 * nutri[nameOfIngre][0][key]);
+    arrayofMealTypes[inc].innerHTML=newList.weights[inc].toFixed(2);
+    totalNutritionCalculate(inc);
+    inc++;
+  }
+  }
+  var text="";
+  for(var j=0;j<newList.items.length;j++)
+        text = text+"<li id='"+name+j+"' class='' data-value="+newList.items[j].InputWeight+">"+newList.items[j].Type + "-- "+newList.items[j].Name + " "+  newList.items[j].InputWeight+" grams <button class='btn btn-warning' value='"+name+"' id='button"+name+j+"' onClick=deleteItem(this.value,"+j+") >Delete</button></li>";
+
+        $('#'+id).empty();
+        $("#"+id).append( text );
+
+
+}
+// When delete button is clicked from the list of meal
+function deleteItem(name,index)
+{
+switch(name)
+{
+  case 'meal1':
+  var nameOfIngre=totalNutrition.nutriContentMeal1.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal1.items[index]);
+  totalNutrition.nutriContentMeal1.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal1;
+  updateList(newList,index,name,'earlyMorningList',nameOfIngre);
+  break;
+
+  case 'meal2':
+  var nameOfIngre=totalNutrition.nutriContentMeal2.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal2.items[index]);
+  totalNutrition.nutriContentMeal2.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal2;
+  updateList(newList,index,name,'breakfastList',nameOfIngre);
+  break;
+
+  case 'meal3':
+  var nameOfIngre=totalNutrition.nutriContentMeal3.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal3.items[index]);
+  totalNutrition.nutriContentMeal3.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal3;
+  updateList(newList,index,name,'brunchList',nameOfIngre);
+  break;
+
+  case 'meal4':
+  var nameOfIngre=totalNutrition.nutriContentMeal4.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal4.items[index]);
+  totalNutrition.nutriContentMeal4.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal4;
+  updateList(newList,index,name,'lunchList',nameOfIngre);
+  break;
+
+  case 'meal5':
+  var nameOfIngre=totalNutrition.nutriContentMeal5.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal5.items[index]);
+  totalNutrition.nutriContentMeal5.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal5;
+  updateList(newList,index,name,'supperList',nameOfIngre);
+  break;
+
+  case 'meal6':
+  var nameOfIngre=totalNutrition.nutriContentMeal6.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal6.items[index]);
+  totalNutrition.nutriContentMeal6.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal6;
+  updateList(newList,index,name,'dinnerList',nameOfIngre);
+  break;
+
+  case 'meal7':
+  var nameOfIngre=totalNutrition.nutriContentMeal7.items[index].Name;
+  contentTypeWholeDayWeightUpdate('-',totalNutrition.nutriContentMeal7.items[index]);
+  totalNutrition.nutriContentMeal7.items.splice(index, 1);
+  var newList= totalNutrition.nutriContentMeal7;
+  updateList(newList,index,name,'postDinnerList',nameOfIngre);
+  break;
+}
+
+}
+
+function addNutrition()
+{
+
+  var value = $('#ajax').val();
+
+  var gramsAmount = $('#ingrams').val();
+  var i=0;
+  var mealTypeSelected=$('#mealType').val();
+  var arrayofMealTypes=document.querySelectorAll('.'+mealTypeSelected);
+  if(nutri[value] && gramsAmount!=0)
+  {
+  $('#results').html($('#ajax').val() + " is Added");
+  for (var key in nutri[value][0])
+  {
+    if(key != "P" ) {
+    switch(mealTypeSelected)
+    {
+        case 'meal1':
+        if(!totalNutrition.nutriContentMeal1.weights[i])
+        totalNutrition.nutriContentMeal1.weights[i]=0;
+        totalNutrition.nutriContentMeal1.weights[i]=totalNutrition.nutriContentMeal1.weights[i] + gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal1.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal1.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});// push object with calculated weights
+
+            var text="",j;
+        for(j=0;j<totalNutrition.nutriContentMeal1.items.length;j++)
+        text = text+"<li id='meal1"+j+"' class='' data-value="+totalNutrition.nutriContentMeal1.items[j].InputWeight+">"+totalNutrition.nutriContentMeal1.items[j].Type + "-- "+totalNutrition.nutriContentMeal1.items[j].Name + " "+  totalNutrition.nutriContentMeal1.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+        contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal1.items[j-1]);
+        $('#earlyMorningList').empty();
+        $("#earlyMorningList").append( text );
+        }
+        break;
+
+        case 'meal2':
+        if(!totalNutrition.nutriContentMeal2.weights[i])
+        totalNutrition.nutriContentMeal2.weights[i]=0;
+        totalNutrition.nutriContentMeal2.weights[i]=totalNutrition.nutriContentMeal2.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal2.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal2.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal2.items.length;j++)
+        text = text+"<li id='meal2"+j+"' class='' data-value="+totalNutrition.nutriContentMeal2.items[j].InputWeight+">"+totalNutrition.nutriContentMeal2.items[j].Type + "--"+totalNutrition.nutriContentMeal2.items[j].Name + " "+  totalNutrition.nutriContentMeal2.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal2.items[j-1]);
+        $('#breakfastList').empty();
+        $("#breakfastList").append( text );
+        }
+        break;
+
+        case 'meal3':
+        if(!totalNutrition.nutriContentMeal3.weights[i])
+        totalNutrition.nutriContentMeal3.weights[i]=0;
+        totalNutrition.nutriContentMeal3.weights[i]=totalNutrition.nutriContentMeal3.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal3.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal3.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal3.items.length;j++)
+        text = text+"<li id='meal3"+j+"' class='' data-value="+totalNutrition.nutriContentMeal3.items[j].InputWeight+">"+totalNutrition.nutriContentMeal3.items[j].Type + "--"+totalNutrition.nutriContentMeal3.items[j].Name + " "+  totalNutrition.nutriContentMeal3.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal3.items[j-1]);
+        $('#brunchList').empty();
+        $("#brunchList").append( text );
+        }
+        break;
+
+        case 'meal4':
+        if(!totalNutrition.nutriContentMeal4.weights[i])
+        totalNutrition.nutriContentMeal4.weights[i]=0;
+        totalNutrition.nutriContentMeal4.weights[i]=totalNutrition.nutriContentMeal4.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal4.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal4.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal4.items.length;j++)
+        text = text+"<li id='meal4"+j+"' class='' data-value="+totalNutrition.nutriContentMeal4.items[j].InputWeight+">"+totalNutrition.nutriContentMeal4.items[j].Type + "--"+totalNutrition.nutriContentMeal4.items[j].Name + " "+  totalNutrition.nutriContentMeal4.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal4.items[j-1]);
+        $('#lunchList').empty();
+        $("#lunchList").append( text );
+        }
+        break;
+
+        case 'meal5':
+        if(!totalNutrition.nutriContentMeal5.weights[i])
+        totalNutrition.nutriContentMeal5.weights[i]=0;
+        totalNutrition.nutriContentMeal5.weights[i]=totalNutrition.nutriContentMeal5.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal5.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal5.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal5.items.length;j++)
+        text = text+"<li id='meal5"+j+"' class='' data-value="+totalNutrition.nutriContentMeal5.items[j].InputWeight+">"+totalNutrition.nutriContentMeal5.items[j].Type + "--"+totalNutrition.nutriContentMeal5.items[j].Name + " "+  totalNutrition.nutriContentMeal5.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal5.items[j-1]);
+        $('#supperList').empty();
+        $("#supperList").append( text );
+        }
+        break;
+
+        case 'meal6':
+        if(!totalNutrition.nutriContentMeal6.weights[i])
+        totalNutrition.nutriContentMeal6.weights[i]=0;
+        totalNutrition.nutriContentMeal6.weights[i]=totalNutrition.nutriContentMeal6.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal6.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal6.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal6.items.length;j++)
+        text = text+"<li id='meal6"+j+"' class='' data-value="+totalNutrition.nutriContentMeal6.items[j].InputWeight+">"+totalNutrition.nutriContentMeal6.items[j].Type + "--"+totalNutrition.nutriContentMeal6.items[j].Name + " "+  totalNutrition.nutriContentMeal6.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal6.items[j-1]);
+        $('#dinnerList').empty();
+        $("#dinnerList").append( text );
+        }
+        break;
+
+        case 'meal7':
+        if(!totalNutrition.nutriContentMeal7.weights[i])
+        totalNutrition.nutriContentMeal7.weights[i]=0;
+        totalNutrition.nutriContentMeal7.weights[i]=totalNutrition.nutriContentMeal7.weights[i]+gramsAmount/100* nutri[value][0][key];
+        arrayofMealTypes[i].innerHTML=totalNutrition.nutriContentMeal7.weights[i].toFixed(2);
+        if(i==Object.keys(nutri[value][0]).length-2)
+        {
+        totalNutrition.nutriContentMeal7.items.push({'Name':value,'InputWeight':gramsAmount,'Type':nutri[value][0].P});
+        var text="";
+        for(var j=0;j<totalNutrition.nutriContentMeal7.items.length;j++)
+        text = text+"<li id='meal7"+j+"' class='' data-value="+totalNutrition.nutriContentMeal7.items[j].InputWeight+">"+totalNutrition.nutriContentMeal7.items[j].Type + "--"+totalNutrition.nutriContentMeal7.items[j].Name + " "+  totalNutrition.nutriContentMeal7.items[j].InputWeight+" grams <button class='btn btn-warning' id='button"+mealTypeSelected+j+"' value='"+mealTypeSelected+"' onClick=deleteItem(this.value,"+j+")>Delete</button></li>";
+            contentTypeWholeDayWeightUpdate('+',totalNutrition.nutriContentMeal7.items[j-1]);
+        $('#postDinnerList').empty();
+        $("#postDinnerList").append(text);
+        }
+        break;
+
+    }
+    if(!totalWeight[i])
+    totalWeight[i]=0;
+    totalNutritionCalculate(i);
+      i++;
+  }
+
+}
+}
+else {
+
+ $('#results').html('Please enter a valid combination of ingredient and amount');
+
+}
+  $('#ingrams').val(0);
+  $('#ajax').val('');
+}
